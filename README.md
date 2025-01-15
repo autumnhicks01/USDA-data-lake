@@ -79,6 +79,23 @@ Before running the script, ensure you have the following:
 
 2.  The script will fetch food data and upload it to S3. You will see confirmation in the console once the process completes.
 
+### Fetching Data from the USDA API with Pagination
+
+The `setup_usda_data_lake.py` script fetches data from the USDA Food Data Central API using a paginated approach. This ensures that the script doesn't overwhelm the system or hit API rate limits by attempting to download a large amount of data at once. Instead, it downloads data in smaller chunks, each representing a single page of results.
+
+#### Pagination Details:
+
+-   **Page Size:** The script fetches food items in pages, with each page containing up to 25 food records (set by the `page_size` parameter). You can adjust this if needed, but 25 is the default to balance performance and data retrieval.
+-   **Max Pages:** The script is configured to retrieve up to 2000 pages of data, which would equate to fetching approximately 50,000 records (25 items per page). However, **the USDA API may limit the number of pages that can be retrieved**, so it is possible that attempting to access more than 2000 pages may cause the script to fail due to the API's rate limits or pagination restrictions. As a result, **the script will only attempt to fetch up to 2000 pages to ensure reliability and avoid hitting these limits**.
+
+#### Key Points to Remember:
+
+-   The **pagination** prevents downloading large files all at once, ensuring that the data is processed in manageable chunks.
+-   The script fetches only the relevant data fields: `foodName`, `brand`, `ingredients`, and `nutrients`, significantly reducing the size of the uploaded data compared to the raw API response.
+-   **API Limitations:** Since the USDA API may have a limit on the number of pages or requests that can be made, **it is advisable to monitor the process if you need to adjust the `max_pages` value**. For production purposes, a smaller value for `max_pages` (e.g., 1000 or fewer) could be used to ensure the script remains within safe API usage limits.
+
+If you wish to adjust the number of pages being fetched, you can update the `max_pages` parameter to a lower number (e.g., 1000) to avoid exceeding the USDA API's limitations.
+
 #### Step 5: Manually Check for the Resources
 
 1.  **S3 Bucket**: Go to the S3 service in AWS Console and look for the bucket `usda-analytics-data-lake`.
